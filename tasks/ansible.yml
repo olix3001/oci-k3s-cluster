@@ -1,0 +1,21 @@
+---
+version: "3"
+
+tasks:
+  list:
+    desc: List available ansible hosts
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - "ansible all --inventory=inventory/cluster/hosts.ini --list-hosts"
+  
+  ping:
+    desc: Ping all servers
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - "ansible all --inventory=inventory/cluster/hosts.ini -m ping"
+
+  setup:
+    desc: Setup all servers
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - "ansible-playbook -i inventory/cluster/hosts.ini tasks/playbook.yml"

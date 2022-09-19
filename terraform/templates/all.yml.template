@@ -1,0 +1,2 @@
+ansible_user: kube
+master_ip: ${k3s_master_ip}

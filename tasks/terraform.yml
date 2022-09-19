@@ -1,0 +1,35 @@
+---
+version: "3"
+
+tasks:
+  init:
+    desc: Initialize terraform
+    dir: "{{.TERRAFORM_DIR}}"
+    cmds:
+      - "terraform init"
+
+  plan:
+    desc: Prepare all the nodes for running k3s
+    dir: "{{.TERRAFORM_DIR}}"
+    cmds:
+      - "terraform plan"
+
+  apply:
+    desc: Prepare all the nodes for running k3s
+    dir: "{{.TERRAFORM_DIR}}"
+    cmds:
+      - "terraform apply"
+
+  validate:
+    desc: Validate all the oci resources
+    dir: "{{.TERRAFORM_DIR}}"
+    cmds:
+      - "terraform validate"
+
+  destroy:
+    desc: Delete all the k3s nodes
+    dir: "{{.TERRAFORM_DIR}}"
+    cmds:
+      - "terraform destroy"
+
+  # terraform pricing?

@@ -1,0 +1,5 @@
+[masters]
+${k3s_master_ips}
+
+[workers]
+${k3s_worker_ips}

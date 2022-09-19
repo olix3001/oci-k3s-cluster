@@ -19,9 +19,11 @@ variable "tenancy_ocid" {
     type = string
 }
 
+// DEPRECATED
 variable "allowed_ip_cidr" {
     description = "CIDR for the allowed ips"
     type = string
+    default = "0.0.0.0/0"
 }
 
 variable "path_to_public_key" {

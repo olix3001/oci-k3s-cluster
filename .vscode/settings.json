@@ -1,0 +1,10 @@
+{
+    "yaml.schemas": {
+        "https://json.schemastore.org/taskfile.json": [
+            "file:///home/olix3001/Documents/oracle-kubernetes/tasks/oci.yml",
+            "file:///home/olix3001/Documents/oracle-kubernetes/tasks/terraform.yml",
+            "file:///home/olix3001/Documents/oracle-kubernetes/tasks/ansible.yml"
+        ],
+        "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json": "file:///home/olix3001/Documents/oracle-kubernetes/ansible/tasks/playbook.yml"
+    }
+}

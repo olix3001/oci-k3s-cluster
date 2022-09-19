@@ -1,0 +1,65 @@
+- name: Setup main master server
+  hosts: masters[0]
+  tasks:
+    - name: Setup k3s as master
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644 --node-name k3s-master-main --tls-san {{ ansible_ssh_host }} --cluster-init
+    - name: Save master token to a variable
+      ansible.builtin.command: sudo cat /var/lib/rancher/k3s/server/node-token
+      register: node_token_encoded
+    - name: Share variable
+      add_host:
+        name: "variable_holder"
+        node_token_enc: "{{node_token_encoded}}"
+
+    - name: Allow 6443 (k3s) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 6443 -j ACCEPT
+    - name: Allow 8080 (traefik) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
+    - name: Allow 80 (http) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+    - name: Allow 443 (https/tls) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+    - name: Allow everything inside the network
+      ansible.builtin.shell: sudo iptables -I INPUT -s 10.0.0.0/24 -p all -j ACCEPT
+
+    - name: Update kubeconfig with correct public ip
+      ansible.builtin.shell: sudo cp /etc/rancher/k3s/k3s.yaml ~/config && sudo sed -i 's/127.0.0.1/{{ ansible_ssh_host }}/g' ~/config
+    - name: Download kubeconfig to local machine
+      ansible.builtin.fetch:
+        src: ~/config
+        dest: ~/.kube/config
+        flat: true
+
+- name: Join worker nodes
+  hosts: workers
+  tasks:
+    - name: Setup k3s as worker
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | K3S_NODE_NAME=k3s-worker-01 K3S_URL=https://10.0.0.100:6443 K3S_TOKEN={{hostvars['variable_holder']['node_token_enc'].stdout}} sh -
+   
+    - name: Allow 6443 (k3s) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 6443 -j ACCEPT
+    - name: Allow 8080 (traefik) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
+    - name: Allow 80 (http) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+    - name: Allow 443 (https/tls) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+    - name: Allow everything inside the network
+      ansible.builtin.shell: sudo iptables -I INPUT -s 10.0.0.0/24 -p all -j ACCEPT
+
+- name: Join other masters
+  hosts: masters[1:]
+  tasks:
+    - name: Allow 6443 (k3s) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 6443 -j ACCEPT
+    - name: Allow 8080 (traefik) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
+    - name: Allow 80 (http) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+    - name: Allow 443 (https/tls) on firewall
+      ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+    - name: Allow everything inside the network
+      ansible.builtin.shell: sudo iptables -I INPUT -s 10.0.0.0/24 -p all -j ACCEPT
+      
+    - name: Setup k3s as another master
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | K3S_TOKEN={{hostvars['variable_holder']['node_token_enc'].stdout}} sh -s - server --server https://10.0.0.100:6443
