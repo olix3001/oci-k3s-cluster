@@ -21,6 +21,9 @@
       ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
     - name: Allow everything inside the network
       ansible.builtin.shell: sudo iptables -I INPUT -s 10.0.0.0/24 -p all -j ACCEPT
+    - name: Make iptables persistent
+      ansible.builtin.shell: sudo apt install iptables-persistent && sudo sh -c "iptables-save > /etc/iptables/rules.v4"
+
 
     - name: Update kubeconfig with correct public ip
       ansible.builtin.shell: sudo cp /etc/rancher/k3s/k3s.yaml ~/config && sudo sed -i 's/127.0.0.1/{{ ansible_ssh_host }}/g' ~/config
@@ -46,6 +49,8 @@
       ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
     - name: Allow everything inside the network
       ansible.builtin.shell: sudo iptables -I INPUT -s 10.0.0.0/24 -p all -j ACCEPT
+    - name: Make iptables persistent
+      ansible.builtin.shell: sudo apt install iptables-persistent && sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 
 - name: Join other masters
   hosts: masters[1:]
@@ -60,6 +65,8 @@
       ansible.builtin.shell: sudo iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
     - name: Allow everything inside the network
       ansible.builtin.shell: sudo iptables -I INPUT -s 10.0.0.0/24 -p all -j ACCEPT
+    - name: Make iptables persistent
+      ansible.builtin.shell: sudo apt install iptables-persistent && sudo sh -c "iptables-save > /etc/iptables/rules.v4"
       
     - name: Setup k3s as another master
       ansible.builtin.shell: curl -sfL https://get.k3s.io | K3S_TOKEN={{hostvars['variable_holder']['node_token_enc'].stdout}} sh -s - server --server https://10.0.0.100:6443
