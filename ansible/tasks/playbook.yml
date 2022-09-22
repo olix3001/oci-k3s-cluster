@@ -70,3 +70,11 @@
       
     - name: Setup k3s as another master
       ansible.builtin.shell: curl -sfL https://get.k3s.io | K3S_TOKEN={{hostvars['variable_holder']['node_token_enc'].stdout}} sh -s - server --server https://10.0.0.100:6443
+
+- name: Add Swap
+  hosts: all:!variable_holder
+  become: true
+  vars:
+    swap_file_size_mb: '4086'
+  roles:
+    - geerlingguy.swap
